@@ -9,11 +9,11 @@
 
 #define PACKET_ID(packet) ( ((packet[1] & 0xF0)<<24) | (packet[2]<<16) | (packet[3]<<8) | (packet[7]) )
 
-static const uint8_t CHANNELS[] = {9, 40, 71};
-#define NUM_CHANNELS (sizeof(CHANNELS)/sizeof(CHANNELS[0]))
-
-MiLightRadio::MiLightRadio(AbstractPL1167 &pl1167)
-  : _pl1167(pl1167) {
+MiLightRadio::MiLightRadio(AbstractPL1167 &pl1167, const MiLightSettings &settings)
+  : _pl1167{pl1167},
+    _channels{settings.channel1, settings.channel2, settings.channel3},
+    _syncword0{settings.syncword0},
+    _syncword3{settings.syncword3} {
   _waiting = false;
 }
 
@@ -39,7 +39,7 @@ int MiLightRadio::begin()
     return retval;
   }
 
-  retval = _pl1167.setSyncword(0x147A, 0x258B);
+  retval = _pl1167.setSyncword(_syncword0, _syncword3);
   if (retval < 0) {
     return retval;
   }
@@ -60,7 +60,7 @@ bool MiLightRadio::available()
     return true;
   }
 
-  if (_pl1167.receive(CHANNELS[0]) > 0) {
+  if (_pl1167.receive(_channels[0]) > 0) {
     size_t packet_length = sizeof(_packet);
     if (_pl1167.readFIFO(_packet, packet_length) < 0) {
       return false;
@@ -126,9 +126,9 @@ int MiLightRadio::write(uint8_t frame[], size_t frame_length)
 
 int MiLightRadio::resend()
 {
-  for (size_t i = 0; i < NUM_CHANNELS; i++) {
+  for (size_t i = 0; i < sizeof(_channels)/sizeof(_channels[0]); i++) {
     _pl1167.writeFIFO(_out_packet, _out_packet[0] + 1);
-    _pl1167.transmit(CHANNELS[i]);
+    _pl1167.transmit(_channels[i]);
   }
   return 0;
 }

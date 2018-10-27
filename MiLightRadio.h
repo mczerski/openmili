@@ -18,9 +18,17 @@
 #ifndef MILIGHTRADIO_H_
 #define MILIGHTRADIO_H_
 
+struct MiLightSettings {
+    uint8_t channel1;
+    uint8_t channel2;
+    uint8_t channel3;
+    uint16_t syncword0;
+    uint16_t syncword3;
+};
+
 class MiLightRadio {
   public:
-    MiLightRadio(AbstractPL1167 &pl1167);
+    MiLightRadio(AbstractPL1167 &pl1167, const MiLightSettings &settings);
     int begin();
     bool available();
     int read(uint8_t frame[], size_t &frame_length);
@@ -34,6 +42,9 @@ class MiLightRadio {
     uint8_t _packet[8], _out_packet[8];
     bool _waiting;
     int _dupes_received;
+    uint8_t _channels[3];
+    uint16_t _syncword0;
+    uint16_t _syncword3;
 };
 
 
