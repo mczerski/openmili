@@ -177,20 +177,6 @@ int PL1167_nRF24::writeFIFO(const uint8_t data[], size_t data_length)
   _packet_length = data_length;
   _received = false;
 
-  return data_length;
-}
-
-int PL1167_nRF24::transmit(uint8_t channel)
-{
-  if (channel != _channel) {
-    _channel = channel;
-    int retval = recalc_parameters();
-    if (retval < 0) {
-      return retval;
-    }
-  }
-
-  _radio.stopListening();
   uint8_t tmp[sizeof(_packet)];
 
   uint8_t trailer = (_packet[0] & 1) ? 0x55 : 0xAA;  // NOTE: This is a guess, it might also be based upon the last
@@ -257,8 +243,20 @@ int PL1167_nRF24::transmit(uint8_t channel)
       buffer_fill -= 8;
     }
   }
+  memcpy(_packet, tmp, sizeof(_packet));
+  _packet_length = outp;
+  return data_length;
+}
 
-  _radio.write(tmp, outp);
+int PL1167_nRF24::transmit(uint8_t channel)
+{
+  if (channel != _channel) {
+    _channel = channel;
+    _radio.setChannel(2 + _channel);
+  }
+
+  _radio.stopListening();
+  _radio.write(_packet, _packet_length);
   return 0;
 }
 

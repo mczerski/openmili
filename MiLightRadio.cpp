@@ -116,6 +116,7 @@ int MiLightRadio::write(uint8_t frame[], size_t frame_length)
 
   memcpy(_out_packet + 1, frame, frame_length);
   _out_packet[0] = frame_length;
+  _pl1167.writeFIFO(_out_packet, _out_packet[0] + 1);
 
   int retval = resend();
   if (retval < 0) {
@@ -127,8 +128,8 @@ int MiLightRadio::write(uint8_t frame[], size_t frame_length)
 int MiLightRadio::resend()
 {
   for (size_t i = 0; i < sizeof(_channels)/sizeof(_channels[0]); i++) {
-    _pl1167.writeFIFO(_out_packet, _out_packet[0] + 1);
     _pl1167.transmit(_channels[i]);
   }
   return 0;
 }
+
