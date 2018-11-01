@@ -83,6 +83,7 @@ int PL1167_nRF24::recalc_parameters()
   _radio.setPALevel(RF24_PA_MAX);
   _radio.setDataRate(RF24_1MBPS);
   _radio.disableCRC();
+  _radio.stopListening();
 
   return 0;
 }
@@ -255,7 +256,6 @@ int PL1167_nRF24::transmit(uint8_t channel)
     _radio.setChannel(2 + _channel);
   }
 
-  _radio.stopListening();
   _radio.write(_packet, _packet_length);
   return 0;
 }

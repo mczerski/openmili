@@ -49,8 +49,6 @@ int MiLightRadio::begin()
     return retval;
   }
 
-  available();
-
   return 0;
 }
 
